@@ -1,6 +1,6 @@
 # Written by Mark Winder, mark.winder4@btinternet.com  
 use vars qw($VERSION); 
-$VERSION=0.06; 
+$VERSION=0.061; 
 
 package Gcode;
 use vars qw(@ISA);  
@@ -201,12 +201,11 @@ sub gcompr
 	   shift; shift; 
 	}
 	
-	while ($_[0]=~/^G/i)
+	while (@_>0 and $_[0]=~/^G/i)
 	{
-	
-		$c.=" ".$_[0]; 
-		shift; 
-		$gc->{pending}=''; # we clear this if additional values are passed 
+            $c.=" ".$_[0]; 
+            shift; 
+            $gc->{pending}=''; # we clear this if additional values are passed 
 	}
    return proc($gc,$c); 
 }
@@ -236,8 +235,8 @@ sub gcomp0
 	# cutter compensation off
 
 	my ($c)="G40 "; 
-    my ($gc)=shift; 
-	while ($_[0]=~/G/i)
+        my ($gc)=shift; 
+	while (@_>0 and $_[0]=~/G/i)
 	{
 		$c.=" ".$_[0]; 
 		shift; 

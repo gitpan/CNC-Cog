@@ -1,4 +1,3 @@
-
 #Written by Mark Winder, mark.winder4@btinternet.com 
 # Copyright 2004,2005
 use GD;
@@ -6,7 +5,7 @@ use strict;
 
 package Profile;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION=0.06;  
+$VERSION=0.061;
 
 my $pi=4.0 * atan2(1, 1);
 # profile 
@@ -88,7 +87,7 @@ sub points
 # profile 
 # Take 2 (for a move) or 4 (for an arc) points and add to end of the profile 
 # can also take an existing profile, adding it to the 1st. 
-sub push
+sub ppush
 {
   my ($p)=shift(@_); 
   if (ref($_[0]) ne '')
@@ -355,7 +354,7 @@ sub linesmooth
   my $say=$p2[1]*($ll-$l)/$ll+$p1[1]*($l/$ll); 
 
   # Find the end of arc by parametric substitution into line p2,p3 
-  my $ll=sqrt(($p3[0]-$p2[0])**2+($p3[1]-$p2[1])**2); # length of this line; 
+     $ll=sqrt(($p3[0]-$p2[0])**2+($p3[1]-$p2[1])**2); # length of this line; 
   my $eax=$p2[0]*($ll-$l)/$ll+$p3[0]*($l/$ll); 
   my $eay=$p2[1]*($ll-$l)/$ll+$p3[1]*($l/$ll); 
 
@@ -559,10 +558,8 @@ sub plot
 package Wheel;
 
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION=0.05; 
+$VERSION=0.061; 
 
-#my $pi=3.141592654;
-my $pi=4.0 * atan2(1, 1);
 my $mm;
 $mm=$mm=1.0/25.4;;    # 1mm is this inches; 
 
@@ -591,13 +588,6 @@ sub passes
   return $w->{passes}; 
 }
 # wheel
-sub passdepth
-{
-  my ($w)=@_; 
-
-  return $w->{passdepth}; 
-}
-
 # set the module and number of teeth. 
 sub new
 {
@@ -722,8 +712,9 @@ sub cuttrepan
 
     $cp->{mm} or $cp->{mm}=1.0/25.4;
 
-    map{ eval "\$$_=$cp->{$_}" } qw(spoken wos bsf rsf roe wobf); 
-
+    map{ eval '\$$_=$cp->{$_} ' } qw(spoken wos bsf rsf roe wobf); 
+    $wobf ||= 1.0; # default to non-tapered spokes. 
+ 
     return if (!$spoken);   # no spokes, no trepanning. 
 
     my $mm=$cp->{mm}; 
@@ -855,7 +846,7 @@ sub cuthole
   
   my ($cp,$gp,$x,$y,$z,$size,$feed,$cuttersize)=@_; 
 
-  return if ($size==undef or $size<=0); 
+  return if (!defined($size) or $size<=0); 
   
   my $holesize=$cp->{holesize};
   $cuttersize ||= $cp->{cuttersize}; # can be optional, use wheel cutter if not supplied
@@ -984,7 +975,7 @@ sub cut
                         # In some situations particularly pinions tooth and gap angles are not the same. 
                         # define twf as factor extra for tooth, less than 1 for a wider gap 
     my $tig=$ti*(2-$cp->{twf});  #  width of a gap in radians 
-    my $ti=$ti*$cp->{twf};       # this is now the width of a tooth. $tig+$ti is unchanged bu changes to $twf
+       $ti=$ti*$cp->{twf};       # this is now the width of a tooth. $tig+$ti is unchanged bu changes to $twf
     
 
     my ($xs,$ys,$zs)=($x,$y,$z);
@@ -1608,7 +1599,7 @@ my $ca2=(($cx-$x3)**2+($cy-$y3)**2-($x3-$x4)**2-($y3-$y4)**2-($cx-$x4)**2-($cy-$
 
 my $l2 =$ca2*sqrt((($cx-$x4)**2+($cy-$y4)**2)); 
 
-my $t=$l2/sqrt(($x3-$x4)**2+($y3-$y4)**2); 
+   $t=$l2/sqrt(($x3-$x4)**2+($y3-$y4)**2); 
 
 my $mx3=$x4*(1-$t)+$x3*$t; 
 my $my3=$y4*(1-$t)+$y3*$t; 
@@ -1960,13 +1951,13 @@ my $p=Profile->new();
 
 $y+=$armwidth/2/cos($droopangle);
 
-$p->push($x,$y); 
+$p->ppush($x,$y); 
 $p=$p->rotate(-$droopangle,$xs,$ys);
 $y=$ys+$armwidth/2;  
 
 
 $p->comment("Top left or right corner"); 
-$p->push($x-sqrt(($innerlength+$width)**2-$armwidth*$armwidth/4),$y); # locates extreme nw corner 
+$p->ppush($x-sqrt(($innerlength+$width)**2-$armwidth*$armwidth/4),$y); # locates extreme nw corner 
 
 $x-=$innerlength+$width;
 $y-=$armwidth/2;          # back onto center line 
@@ -1976,14 +1967,14 @@ $p=$p->rotate(-$angle-$liftouter,$xs,$ys);
 
 
 $p->comment("Outermost arc of yoke"); 
-$p->push($x,$y,$innerlength+$width,1);
+$p->ppush($x,$y,$innerlength+$width,1);
 $p=$p->smooth($outerradius,$xs,$ys) if ($outerradius); 
 
 $p=$p->rotate(+$liftouter-$liftinner,$xs,$ys); 
 $x+=$width; 
 
 $p->comment("Pallete surface"); 
-$p->push($x,$y);
+$p->ppush($x,$y);
 
 
 my $a=$angle-atan2($armwidth,2*$innerlength)+$liftinner; # This is the angle to return. 
@@ -1991,12 +1982,12 @@ my $a=$angle-atan2($armwidth,2*$innerlength)+$liftinner; # This is the angle to 
 $p=$p->rotate($a,$xs,$ys);
 $p=$p->smooth($outerpr,$xs,$ys) if ($outerpr); 
 $p->comment("Innermost arc of yoke."); 
-$p->push($x,$y,$innerlength,0);  # draw inner surface, curved centered on xs,ys. 
+$p->ppush($x,$y,$innerlength,0);  # draw inner surface, curved centered on xs,ys. 
 $p=$p->smooth($innerpr,$xs,$ys) if ($innerpr); 
 $p=$p->rotate(atan2($armwidth,2*$innerlength),$xs,$ys); 
 $y-=$armwidth/2/cos($droopangle);
 $p=$p->rotate($droopangle,$xs,$ys); 
-$p->push($xs,$y); 
+$p->ppush($xs,$y); 
 $p=$p->smooth($innerradius,$xs,$ys) if ($innerradius); 
 $p=$p->rotate($theta,$xs,$ys) if ($theta); 
 return $p; 
@@ -2065,7 +2056,7 @@ $q=$q->move(-$xs,0)->mirrory()->reverse()->move($xs,0);
 print "After flip...\n"; 
 $q->print();
 $p->comment("Second half-yoke"); 
-$p->push($q);
+$p->ppush($q);
 print "After add...\n"; 
 $p->print();  
 
@@ -2211,10 +2202,6 @@ use vars qw($VERSION @ISA @EXPORT);
 $VERSION=0.05;  
 
 	
-# my  $pi=3.141592654;
-my $pi=4.0 * atan2(1, 1);
-
-my $mm=1.0/25.4;  # 1mm is this inches;
 my $inches="inches"; 
 my $f="%9f  "; 
 my $ff="%2.1f";   # for feed rate; 
@@ -2520,7 +2507,7 @@ printf "calling cut on a %s name is %s r1 is %f r2 is %f\n",ref($c),$c->{name},$
 
 package Boss;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION=0.05;  
+$VERSION=0.061;  
 
 	
 sub new 

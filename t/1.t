@@ -53,7 +53,8 @@ sub hashfile
 
     my @line=split(/\s+/); 
 
-    @line=map{ $_!=0?sprintf("%2.2f",$_):$_} @line; 
+   # @line=map{ $_!=0?sprintf("%2.2f",$_):$_} @line; 
+    @line=map{ m/^[-+0-9.]+$/?sprintf("%2.2f",$_):$_} @line; 
     push(@tokens,@line); 
   } 
   close F; 

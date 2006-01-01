@@ -11,3 +11,11 @@ Revision history for Perl extension cog.
 0.06  - Rename module to CNC::Cog and CNC::Cog::Gdcode
         and CNC::Cog::Gcode
 
+0.061 - Version with package changes so that it installs
+       	correctly under Linux. No functional changes to code. 
+        Changes to remove warnings have been made, including 
+        renaming the function push of the class profile to ppush. 
+        Unless you used this class which is not part of the 
+        exported interface this wont affect you. 
+
+

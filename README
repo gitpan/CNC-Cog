@@ -1,3 +1,9 @@
+Cog version 0.061
+=================
+
+Changes to packaging so that installation works correctly 
+under Linux. No functional changes here. 
+
 cog version 0.06
 ================
 
